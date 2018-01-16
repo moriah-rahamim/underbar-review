@@ -95,6 +95,32 @@
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
+    // Check if iterator exists
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    // Create an array of unique return values,
+    //  as well as an array of the modified versions of the return values.
+
+    let returnValues = [];
+    let uniqueIteratedValues = [];
+
+    // Go through every item in the array
+    //  Call the iterator on the item
+    //  If the value of iterator(item) does not yet exist in the second array
+    //    Add it to the second array
+    //    Add the original item to the first array
+
+    _.each(array, function (item) {
+      let iteratedValue = iterator(item);
+
+      if (uniqueIteratedValues.indexOf(iteratedValue) === -1) {
+        uniqueIteratedValues.push(iteratedValue);
+        returnValues.push(item);
+      }
+    });
+    // Return the whole thing
+    return returnValues;
   };
 
 
