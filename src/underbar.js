@@ -177,6 +177,79 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+
+    // *** recursive version ***
+    var innerReduce = function(collection, iterator, accumulator) {
+      // base case: only 1 value in collection
+      //   call iterator on that item and accumulator
+      //   return it
+      if (Array.isArray(collection)) {
+        if (collection.length < 1) {
+          return accumulator;
+        }
+        if (collection.length === 1) {
+          return iterator(accumulator, collection[0]);
+        }
+      } else if (Object.keys(collection).length === 1) {
+        return iterator(accumulator, collection[Object.keys(collection)[0]]);
+      } else if (Object.keys(collection).length < 1) {
+        return accumulator;
+      }
+
+      // recursive case: more than 1 value in collection
+      //   get the first value of the collection
+      //   call iterator on that value and accumulator
+      //   call innerReduce on:
+      //     * rest of collection, minus this value
+      //     * same iterator
+      //     * return value returned by iterator as new accumulator
+
+      if (Array.isArray(collection)) {
+        // run iterator on first value
+        let newAccumulator = iterator(accumulator, collection[0]);
+        // return recursive call with result as new accumulator
+        return innerReduce(collection.slice(1), iterator, newAccumulator);
+      } else {
+        // copy the whole object
+        let newCollection = Object.assign({}, collection);
+
+        // extract first key/value pair
+        let firstKey = Object.keys(newCollection)[0];
+        // run iterator on first value
+        let newAccumulator = iterator(accumulator, newCollection[firstKey]);
+        // remove that pair from the copied object
+        delete newCollection[firstKey];
+        // return recursive call with result as new accumulator
+        return innerReduce(newCollection, iterator, newAccumulator);        
+      }
+    };
+
+    // check if accumulator exists
+    //   if not, set accumulator as first element
+    //   and call _.reduce on the rest of the collection
+    if (accumulator === undefined) {
+      if (Array.isArray(collection)) {
+        return innerReduce(collection.slice(1), iterator, _.first(collection));
+      } else {
+        // copy the whole object
+        let newCollection = Object.assign({}, collection);
+
+        // extract first key/value pair
+        let firstKey = Object.keys(newCollection)[0];
+        let newAccumulator = newCollection[firstKey];
+        // remove that pair from the copied object
+        delete newCollection[firstKey];
+        
+        return innerReduce(newCollection, iterator, newAccumulator);        
+      }
+    } else {
+      return innerReduce(collection, iterator, accumulator);
+    }
+
+    
+
+    // *** iteration version ***
+    
   };
 
   // Determine if the array or object contains a given value (using `===`).
